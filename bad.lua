@@ -1,87 +1,118 @@
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
 local function createWatermark()
     -- Cria o ScreenGui para o watermark
     local watermark = Instance.new("ScreenGui", game.CoreGui)
     watermark.Name = "Watermark"
     watermark.ResetOnSpawn = false
 
-    -- Cria o Frame que contém o texto do watermark
+    -- Cria o Frame principal (reduzido)
     local watermarkFrame = Instance.new("Frame", watermark)
     watermarkFrame.Name = "WatermarkFrame"
-    watermarkFrame.Size = UDim2.new(0, 200, 0, 30) -- Tamanho inicial
-    watermarkFrame.Position = UDim2.new(1, -210, 0, 10) -- Posiciona no canto superior direito com margem
-    watermarkFrame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15) -- Cor de fundo escura
-    watermarkFrame.BackgroundTransparency = 0.2 -- Leve transparência
-    watermarkFrame.BorderSizePixel = 0 -- Remove a borda padrão
+    watermarkFrame.Size = UDim2.new(0, 220, 0, 28) -- Reduzido de 280x35 para 220x28
+    watermarkFrame.Position = UDim2.new(1, -230, 0, 10)
+    watermarkFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    watermarkFrame.BackgroundTransparency = 0.1
+    watermarkFrame.BorderSizePixel = 0
 
-    -- Adiciona uma borda colorida ao Frame
+    -- Gradiente futurista
+    local gradient = Instance.new("UIGradient", watermarkFrame)
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 40)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 50, 100))
+    })
+    gradient.Rotation = 90
+
+    -- Borda fina
     local border = Instance.new("UIStroke", watermarkFrame)
-    border.Color = Color3.fromRGB(132, 108, 188) -- Cor da borda roxa
-    border.Thickness = 2 -- Espessura da borda
-    border.Transparency = 0 -- Sem transparência
+    border.Color = Color3.fromRGB(100, 80, 200)
+    border.Thickness = 1
+    border.Transparency = 0.3
 
-    -- Cria o TextLabel para o texto do watermark
+    -- Logo de meia lua (reduzida)
+    local moonContainer = Instance.new("Frame", watermarkFrame)
+    moonContainer.Name = "MoonContainer"
+    moonContainer.Size = UDim2.new(0, 20, 0, 20) -- Reduzido de 25x25 para 20x20
+    moonContainer.Position = UDim2.new(0, 4, 0, 4) -- Ajuste sutil na posição
+    moonContainer.BackgroundTransparency = 1
+
+    -- Círculo principal (lua cheia)
+    local moonBase = Instance.new("Frame", moonContainer)
+    moonBase.Name = "MoonBase"
+    moonBase.Size = UDim2.new(1, 0, 1, 0)
+    moonBase.Position = UDim2.new(0, 0, 0, 0)
+    moonBase.BackgroundColor3 = Color3.fromRGB(100, 80, 200)
+    moonBase.BorderSizePixel = 0
+    local moonBaseCorner = Instance.new("UICorner", moonBase)
+    moonBaseCorner.CornerRadius = UDim.new(1, 0)
+
+    -- Círculo de recorte para formar o crescente
+    local moonCutout = Instance.new("Frame", moonContainer)
+    moonCutout.Name = "MoonCutout"
+    moonCutout.Size = UDim2.new(1, 0, 1, 0)
+    moonCutout.Position = UDim2.new(0.3, 0, 0, 0)
+    moonCutout.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    moonCutout.BorderSizePixel = 0
+    local moonCutoutCorner = Instance.new("UICorner", moonCutout)
+    moonCutoutCorner.CornerRadius = UDim.new(1, 0)
+
+    -- TextLabel para o texto (ajustado)
     local watermarkText = Instance.new("TextLabel", watermarkFrame)
     watermarkText.Name = "WatermarkText"
-    watermarkText.Size = UDim2.new(1, -10, 1, 0) -- Margem interna
-    watermarkText.Position = UDim2.new(0, 5, 0, 0) -- Centraliza com padding
-    watermarkText.BackgroundTransparency = 1 -- Fundo transparente
-    watermarkText.TextColor3 = Color3.new(1, 1, 1) -- Cor do texto (branco)
-    watermarkText.Font = Enum.Font.SourceSansBold -- Fonte mais destacada
-    watermarkText.TextSize = 18 -- Tamanho do texto
-    watermarkText.TextStrokeTransparency = 0.7 -- Contorno sutil
-    watermarkText.TextXAlignment = Enum.TextXAlignment.Center -- Alinhamento horizontal
-    watermarkText.TextYAlignment = Enum.TextYAlignment.Center -- Alinhamento vertical
-    watermarkText.RichText = true -- Habilita RichText
-    watermarkText.ClipsDescendants = true -- Evita texto saindo do frame
+    watermarkText.Size = UDim2.new(0, 190, 1, 0) -- Reduzido de 245 para 190
+    watermarkText.Position = UDim2.new(0, 26, 0, 0) -- Ajustado para a nova logo menor
+    watermarkText.BackgroundTransparency = 1
+    watermarkText.TextColor3 = Color3.fromRGB(220, 220, 255) -- Branco-azulado
+    watermarkText.Font = Enum.Font.GothamBold
+    watermarkText.TextSize = 14 -- Reduzido de 16 para 14
+    watermarkText.TextStrokeTransparency = 1
+    watermarkText.TextXAlignment = Enum.TextXAlignment.Left
+    watermarkText.TextYAlignment = Enum.TextYAlignment.Center
+    watermarkText.RichText = true
+    watermarkText.ClipsDescendants = true
 
     -- Função para calcular o FPS
     local function updateFPS()
-        local fps = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
+        local fps = math.floor(1 / RunService.RenderStepped:Wait())
         return fps
     end
 
-    -- Função para adicionar efeito de glow simulado com RichText
-    local function applyGlowEffect(text)
-        return "<font color='rgb(132, 108, 188)'><b>" .. text .. "</b></font>"
-    end
-
-    -- Função para ajustar o tamanho do Frame dinamicamente
+    -- Função para ajustar o tamanho dinamicamente
     local function adjustFrameSize(playerName)
-        local textLength = #playerName + 15 -- Aproximação com base no nome + extras
-        local newWidth = math.max(200, textLength * 10) -- Largura mínima de 200
-        watermarkFrame.Size = UDim2.new(0, newWidth, 0, 30)
-        watermarkFrame.Position = UDim2.new(1, -newWidth - 10, 0, 10) -- Ajusta posição
+        local textLength = #playerName + 20 -- Ajustado para o novo tamanho
+        local newWidth = math.max(220, textLength * 7) -- Reduzido de 280 e 8
+        watermarkFrame.Size = UDim2.new(0, newWidth, 0, 28)
+        watermarkFrame.Position = UDim2.new(1, -newWidth - 0, 0, -55)
     end
 
-    -- Função para atualizar o texto do watermark
+    -- Função para atualizar o texto
     local function updateWatermark()
         while true do
             local fps = updateFPS()
-            local playerName = game.Players.LocalPlayer.Name
-            adjustFrameSize(playerName) -- Ajusta o tamanho do frame
+            local playerName = Players.LocalPlayer.Name
+            adjustFrameSize(playerName)
 
-            -- Aplica o efeito de glow nas partes roxas
+            -- "LUNA" em branco e ".vip" em roxo
             watermarkText.Text = string.format(
-                "Luna%s | %s | %s",
-                applyGlowEffect(".vip"),
-                applyGlowEffect("FPS: " .. fps),
-                applyGlowEffect(playerName)
+                "Luna<font color='rgb(100, 80, 200)'>.vip</font> | FPS: %d | %s",
+                fps,
+                playerName
             )
-            wait(1) -- Atualiza a cada segundo
+            wait(0.5)
         end
     end
 
-    -- Adiciona um gradiente sutil para dar profundidade
-    local gradient = Instance.new("UIGradient", watermarkFrame)
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
-    })
-    gradient.Rotation = 45 -- Ângulo do gradiente
+    -- Sombra sutil
+    local shadow = Instance.new("UIStroke", watermarkFrame)
+    shadow.Color = Color3.fromRGB(0, 0, 0)
+    shadow.Thickness = 2
+    shadow.Transparency = 0.8
+    shadow.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 
-    -- Inicia a atualização do watermark
+    -- Inicia a atualização
     spawn(updateWatermark)
 end
 
--- Executa a função para criar o watermark
+-- Executa a função
 createWatermark()
